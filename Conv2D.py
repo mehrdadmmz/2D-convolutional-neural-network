@@ -1,10 +1,19 @@
+import numpy as np 
+import matplotlib.pyplot as plt
+
+from skimage import data
+from skimage.color import rgb2gray
+
+##############
+# Q1 - part1 #
+##############
 class Conv2D:
     def __init__(self, W, padding=(0, 0), stride=(1, 1), dilation=(1, 1)):
         """
         inputs: 
-        W --> Kernel weights; shape is (C_out, C_in, kH, kW)
-        padding --> padding as a tuple (pad_height, pad_width)
-        stride --> stride as a tuple (stride_height, stride_width)
+        W        --> Kernel weights; shape is (C_out, C_in, kH, kW)
+        padding  --> padding as a tuple (pad_height, pad_width)
+        stride   --> stride as a tuple (stride_height, stride_width)
         dilation --> dilation as a tuple (dilation_height, dilation_width)
         """
 
@@ -18,7 +27,7 @@ class Conv2D:
         """
         inputs: 
         X --> input array; shape can be (C_in, H, W) for a single image or (N, C_in, H, W)
-              for a batch of images
+        for a batch of images
                
         return: 
         Numpy array of shape (C_out, H_out, W_out) for a single image or 
@@ -70,88 +79,90 @@ class Conv2D:
             output = output[0]
             
         return output
+    
+##############
+# Q1 - part2 #
+##############
 
+# Gaussian kernels of size 3 and 2
+gaus_3 = np.array([[1, 2, 1], 
+                   [2, 4, 2], 
+                   [1, 2, 1]], dtype=np.float32)
+gaus_3 = gaus_3 / gaus_3.sum()
+gaus_2 = np.ones((2, 2), dtype=np.float32) / 4
 
-if __name__ == "__main__": 
-  # Gaussian kernels of size 3 and 2
-  gaus_3 = np.array([[1, 2, 1], 
-                     [2, 4, 2], 
-                     [1, 2, 1]], dtype=np.float32)
-  gaus_3 = gaus_3 / gaus_3.sum()
-  gaus_2 = np.ones((2, 2), dtype=np.float32) / 4
-  
-  # Sobel kernels of size 3 and 2
-  sobel_3 = np.array([[-1, -2, -1], 
-                      [0, 0, 0], 
-                      [1, 2, 1]], dtype=np.float32)
-  sobel_2 = np.array([[-1, -1], 
-                      [1, 1]], dtype=np.float32)
-  
-  # Sharpening kernels of size 3 and 2
-  sharpen_3 = np.array([[0, -1, 0], 
-                        [-1, 5, -1], 
-                        [0, -1, 0]], dtype=np.float32)
-  sharpen_2 = np.array([[2, -1], 
-                        [-1, 2]], dtype=np.float32)
-  
-  # Dictionary of dictionaries for different kernels
-  filters = {
-      "Gaussian Blur": {3: gaus_3, 2: gaus_2}, 
-      "Sobel":         {3: sobel_3, 2: sobel_2}, 
-      "Sharpening":    {3: sharpen_3, 2: sharpen_2},
-  }
-  
-  # Settings for testing (a, b, and c)
-  settings = {
-      "a": {"kernel_size": 3, "stride": (1, 1), "dilation": (1, 1), "padding": (1, 1)}, 
-      "b": {"kernel_size": 2, "stride": (2, 2), "dilation": (1, 1), "padding": (0, 0)},
-      "c": {"kernel_size": 3, "stride": (1, 1), "dilation": (2, 2), "padding": (2, 2)},
-  }
-  
-  # Load and normalize the image
-  rgb_image = data.astronaut()  # shape (H, W, 3)
-  rgb_image = rgb_image.astype(np.float32) / 255.0
-  
-  gray_image = rgb2gray(rgb_image)  # shape (H, W)
-  gray_image = gray_image[np.newaxis, :, :]  # shape (1, H, W)
-  
-  # Plot original images both in RGB and grayscale
-  fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12, 24))
-  
-  ax[0].imshow(rgb_image)
-  ax[0].set_title("RGB Original Image")
-  
-  # Squeeze the gray image to remove the extra channel dimension
-  ax[1].imshow(np.squeeze(gray_image), cmap='gray')
-  ax[1].set_title("Gray Original Image")
-  
-  plt.show()
-  
-  # Plotting filtered outputs
-  fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(12, 12))
-  fig.suptitle("Filtered Outputs (Row: Filter Type, Columns: Settings)", fontsize=16)
-  
-  filter_names = list(filters.keys())
-  setting_names = list(settings.keys())
-  
-  for i, filter_name in enumerate(filter_names):
-      for j, setting_name in enumerate(setting_names): 
-          params = settings[setting_name]
-          k_size = params["kernel_size"]
-          stride = params["stride"]
-          dilation = params["dilation"]
-          padding = params["padding"]
-          
-          kernel = filters[filter_name][k_size]
-          W = kernel.reshape(1, 1, k_size, k_size)
-          
-          CNN_2D = Conv2D(W=W, padding=padding, stride=stride, dilation=dilation)
-          
-          output = CNN_2D.forward(gray_image)
-          output = np.squeeze(output, axis=0)  # Remove the extra channel dimension
-          
-          # Get the appropriate subplot axis
-          ax = axes[i, j]
-          ax.imshow(output, cmap='gray')
-          ax.set_title(f"{filter_name}\n{setting_name}\nShape: {output.shape}", fontsize=8)
-          ax.axis("off")
+# Sobel kernels of size 3 and 2
+sobel_3 = np.array([[-1, -2, -1], 
+                    [0, 0, 0], 
+                    [1, 2, 1]], dtype=np.float32)
+sobel_2 = np.array([[-1, -1], 
+                    [1, 1]], dtype=np.float32)
+
+# Sharpening kernels of size 3 and 2
+sharpen_3 = np.array([[0, -1, 0], 
+                      [-1, 5, -1], 
+                      [0, -1, 0]], dtype=np.float32)
+sharpen_2 = np.array([[2, -1], 
+                      [-1, 2]], dtype=np.float32)
+
+# Dictionary of dictionaries for different kernels
+filters = {
+    "Gaussian Blur": {3: gaus_3, 2: gaus_2}, 
+    "Sobel":         {3: sobel_3, 2: sobel_2}, 
+    "Sharpening":    {3: sharpen_3, 2: sharpen_2},
+}
+
+# Settings for testing (a, b, and c)
+settings = {
+    "a": {"kernel_size": 3, "stride": (1, 1), "dilation": (1, 1), "padding": (1, 1)}, 
+    "b": {"kernel_size": 2, "stride": (2, 2), "dilation": (1, 1), "padding": (0, 0)},
+    "c": {"kernel_size": 3, "stride": (1, 1), "dilation": (2, 2), "padding": (2, 2)},
+}
+
+# Load and normalize the image
+rgb_image = data.astronaut()  # shape (H, W, 3)
+rgb_image = rgb_image.astype(np.float32) / 255.0
+
+gray_image = rgb2gray(rgb_image)  # shape (H, W)
+gray_image = gray_image[np.newaxis, :, :]  # shape (1, H, W)
+
+# Plot original images both in RGB and grayscale
+fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(12, 24))
+
+ax[0].imshow(rgb_image)
+ax[0].set_title("RGB Original Image")
+
+# Squeeze the gray image to remove the extra channel dimension
+ax[1].imshow(np.squeeze(gray_image), cmap='gray')
+ax[1].set_title("Gray Original Image")
+
+plt.show()
+
+# Plotting filtered outputs
+fig, axes = plt.subplots(nrows=3, ncols=3, figsize=(12, 12))
+fig.suptitle("Filtered Outputs (Row: Filter Type, Columns: Settings)", fontsize=16)
+
+filter_names = list(filters.keys())
+setting_names = list(settings.keys())
+
+for i, filter_name in enumerate(filter_names):
+    for j, setting_name in enumerate(setting_names): 
+        params = settings[setting_name]
+        k_size = params["kernel_size"]
+        stride = params["stride"]
+        dilation = params["dilation"]
+        padding = params["padding"]
+        
+        kernel = filters[filter_name][k_size]
+        W = kernel.reshape(1, 1, k_size, k_size)
+        
+        CNN_2D = Conv2D(W=W, padding=padding, stride=stride, dilation=dilation)
+        
+        output = CNN_2D.forward(gray_image)
+        output = np.squeeze(output, axis=0)  # Remove the extra channel dimension
+        
+        # Get the appropriate subplot axis
+        ax = axes[i, j]
+        ax.imshow(output, cmap='gray')
+        ax.set_title(f"{filter_name}\n{setting_name}\nShape: {output.shape}", fontsize=8)
+        ax.axis("off")
